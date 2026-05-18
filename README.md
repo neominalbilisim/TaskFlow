@@ -1,34 +1,37 @@
-# TaskFlow - Kurumsal Görev Yönetim Sistemi
+# TaskFlow - Enterprise Task Management System
 
-## 🎯 Proje Hakkında
+## 🎯 About The Project
 
-TaskFlow, **Clean Architecture** ve **SOLID** prensipleri kullanılarak geliştirilmiş, production-ready bir görev yönetim API'sidir.
+TaskFlow is a production-ready task management API developed using **Clean Architecture** and **SOLID** principles.
 
-### 🏗️ Mimari Katmanlar
+### 🏗️ Architecture Layers
 
 ```
 TaskFlow/
 ├── TaskFlow.Domain          → Entities, Enums (No dependencies)
 ├── TaskFlow.Application     → Use Cases, DTOs, Interfaces
 ├── TaskFlow.Infrastructure  → EF Core, Repositories, External Services
-└── TaskFlow.API            → Controllers, Middleware, Filters
+└── TaskFlow.API             → Controllers, Middleware, Filters
 ```
 
-## ✨ Özellikler
+## ✨ Features
 
-### 🔐 Güvenlik
+### 🔐 Security
+
 - ✅ JWT Token-based Authentication
 - ✅ Role-based Authorization (Admin, Manager, Employee)
 - ✅ Resource-based Authorization
 - ✅ Password Hashing (BCrypt)
 
-### ⚡ Performans
+### ⚡ Performance
+
 - ✅ AsNoTracking() for read-only queries
-- ✅ Eager Loading to prevent N+1 problem
+- ✅ Eager Loading to prevent the N+1 problem
 - ✅ Pagination support
-- ✅ Proper indexing on database
+- ✅ Proper database indexing
 
 ### 🎨 Best Practices
+
 - ✅ Clean Architecture
 - ✅ SOLID Principles
 - ✅ Repository Pattern
@@ -39,7 +42,7 @@ TaskFlow/
 - ✅ Health Checks
 - ✅ Swagger/OpenAPI Documentation
 
-## 📦 Teknolojiler
+## 📦 Technologies
 
 - **.NET 8**
 - **Entity Framework Core 8**
@@ -50,32 +53,32 @@ TaskFlow/
 - **Swagger**
 - **Docker**
 
-## 🚀 Kurulum ve Çalıştırma
+## 🚀 Setup and Run
 
-### Docker ile Çalıştırma (Önerilen)
+### Run with Docker (Recommended)
 
 ```bash
-# Projeyi klonlayın
+# Clone the project
 git clone <repo-url>
 cd TaskFlow
 
-# Docker Compose ile başlatın
+# Start with Docker Compose
 docker-compose up -d
 
 # API: http://localhost:5000
 # Swagger: http://localhost:5000/swagger
 ```
 
-### Manuel Çalıştırma
+### Run Manually
 
 ```bash
-# SQL Server bağlantısını appsettings.json'da güncelleyin
+# Update SQL Server connection in appsettings.json
 
-# Migration çalıştırın
+# Run migration
 cd src/TaskFlow.API
 dotnet ef database update
 
-# Uygulamayı başlatın
+# Start the application
 dotnet run
 
 # API: https://localhost:5001
@@ -85,63 +88,71 @@ dotnet run
 ## 📚 API Endpoints
 
 ### Authentication
+
 ```
-POST   /api/auth/register    → Yeni kullanıcı kaydı
-POST   /api/auth/login       → Giriş yap (JWT token al)
+POST   /api/auth/register    → New user registration
+POST   /api/auth/login       → Sign in (get JWT token)
 ```
 
 ### Tasks
+
 ```
-GET    /api/tasks                    → Tüm görevler (Pagination + Filters)
-GET    /api/tasks/{id}               → Görev detayı
-GET    /api/tasks/assigned-to-me     → Bana atanan görevler
-POST   /api/tasks                    → Yeni görev oluştur (Manager+)
-PUT    /api/tasks/{id}               → Görevi güncelle
-PATCH  /api/tasks/{id}/status        → Görev durumunu güncelle
-DELETE /api/tasks/{id}               → Görevi sil (Manager+)
+GET    /api/tasks                    → All tasks (Pagination + Filters)
+GET    /api/tasks/{id}               → Task details
+GET    /api/tasks/assigned-to-me     → Tasks assigned to me
+POST   /api/tasks                    → Create new task (Manager+)
+PUT    /api/tasks/{id}               → Update task
+PATCH  /api/tasks/{id}/status        → Update task status
+DELETE /api/tasks/{id}               → Delete task (Manager+)
 ```
 
 ### Projects
+
 ```
-GET    /api/projects           → Tüm projeler
-GET    /api/projects/{id}      → Proje detayı
-GET    /api/projects/{id}/tasks → Proje görevleri
-POST   /api/projects           → Yeni proje (Manager+)
-PUT    /api/projects/{id}      → Projeyi güncelle (Manager+)
+GET    /api/projects            → All projects
+GET    /api/projects/{id}       → Project details
+GET    /api/projects/{id}/tasks → Project tasks
+POST   /api/projects            → Create new project (Manager+)
+PUT    /api/projects/{id}       → Update project (Manager+)
 ```
 
 ### Users (Admin Only)
+
 ```
-GET    /api/users              → Tüm kullanıcılar
-GET    /api/users/{id}         → Kullanıcı detayı
-PUT    /api/users/{id}/role    → Kullanıcı rolünü değiştir
+GET    /api/users              → All users
+GET    /api/users/{id}         → User details
+PUT    /api/users/{id}/role    → Change user role
 ```
 
 ### Health
+
 ```
-GET    /health                 → Uygulama sağlık durumu
+GET    /health                 → Application health status
 ```
 
-## 🔑 Kullanıcı Rolleri
+## 🔑 User Roles
 
 ### Employee
-- Sadece kendine atanan görevleri görebilir
-- Kendi görevlerinin durumunu güncelleyebilir
+
+- Can only view tasks assigned to themselves
+- Can update status of their own tasks
 
 ### Manager
-- Departmanındaki tüm görevleri görebilir
-- Görev oluşturabilir, atayabilir
-- Proje oluşturabilir
+
+- Can view all tasks in their department
+- Can create and assign tasks
+- Can create projects
 
 ### Admin
-- Tüm sistem erişimi
-- Kullanıcı rollerini değiştirebilir
-- Tüm CRUD işlemlerini yapabilir
 
-## 🧪 Test Senaryosu
+- Full system access
+- Can change user roles
+- Can perform all CRUD operations
+
+## 🧪 Test Scenario
 
 ```bash
-# 1. Kullanıcı kaydı
+# 1. User registration
 POST /api/auth/register
 {
   "email": "john@company.com",
@@ -150,25 +161,25 @@ POST /api/auth/register
   "lastName": "Doe"
 }
 
-# 2. Giriş yap
+# 2. Sign in
 POST /api/auth/login
 {
   "email": "john@company.com",
   "password": "password123"
 }
-# → JWT token alın
+# → Get JWT token
 
-# 3. Swagger'da "Authorize" butonuna token ekleyin
+# 3. Add token to "Authorize" in Swagger
 Bearer <your-jwt-token>
 
-# 4. Proje oluştur (Admin/Manager gerekli)
+# 4. Create project (Admin/Manager required)
 POST /api/projects
 {
   "name": "Web Application",
   "description": "Customer portal project"
 }
 
-# 5. Görev oluştur
+# 5. Create task
 POST /api/tasks
 {
   "title": "Setup database",
@@ -178,59 +189,65 @@ POST /api/tasks
   "assignedUserIds": [1]
 }
 
-# 6. Benim görevlerim
+# 6. My tasks
 GET /api/tasks/assigned-to-me
 
-# 7. Görev durumunu güncelle
+# 7. Update task status
 PATCH /api/tasks/1/status
 {
   "status": 1  // InProgress
 }
 ```
 
-## 🏛️ Clean Architecture Katmanları
+## 🏛️ Clean Architecture Layers
 
 ### Domain Layer
+
 - **Entities:** User, Project, TaskItem, TaskAssignment, Comment
 - **Enums:** TaskStatus, TaskPriority, UserRole
-- **No Dependencies:** Tamamen bağımsız, Pure C#
+- **No Dependencies:** Completely independent, Pure C#
 
 ### Application Layer
-- **Interfaces:** Repository ve Service interface'leri
-- **DTOs:** API request/response modelleri
+
+- **Interfaces:** Repository and service interfaces
+- **DTOs:** API request/response models
 - **Services:** Business logic
 - **Validators:** FluentValidation rules
 - **Depends on:** Domain
 
 ### Infrastructure Layer
+
 - **DbContext:** Entity Framework configuration
 - **Repositories:** Data access implementation
 - **External Services:** TokenService
 - **Depends on:** Application, Domain
 
 ### API Layer (Presentation)
-- **Controllers:** HTTP endpoint'ler
+
+- **Controllers:** HTTP endpoints
 - **Middleware:** Exception handling
 - **Program.cs:** DI configuration
 - **Depends on:** Application, Infrastructure
 
-## 🛡️ Güvenlik Özellikleri
+## 🛡️ Security Features
 
-### JWT Token Yapısı
+### JWT Token Structure
+
 ```json
 {
-  "nameid": "1",
-  "email": "john@company.com",
-  "role": "Employee",
-  "exp": 1234567890
+	"nameid": "1",
+	"email": "john@company.com",
+	"role": "Employee",
+	"exp": 1234567890
 }
 ```
 
 ### Authorization Examples
+
 ```csharp
-[Authorize]                        // Authenticated user gerekli
-[Authorize(Roles = "Admin")]      // Admin rolü gerekli
-[Authorize(Roles = "Admin,Manager")] // Admin VEYA Manager
+[Authorize]                           // Authenticated user required
+[Authorize(Roles = "Admin")]         // Admin role required
+[Authorize(Roles = "Admin,Manager")] // Admin OR Manager
 ```
 
 ## 📊 Database Schema
@@ -244,6 +261,7 @@ Tasks (1) ──→ Comments (N)
 ```
 
 ### Indexes
+
 - `User.Email` (Unique)
 - `Task.Status + Task.Priority` (Composite)
 - `Task.Deadline`
@@ -251,10 +269,10 @@ Tasks (1) ──→ Comments (N)
 
 ## 📝 Logging
 
-Serilog ile yapılandırılmış loglama:
+Structured logging with Serilog:
 
 ```csharp
-// Logs klasöründe günlük dosyalar
+// Daily files in logs folder
 logs/taskflow-20250518.txt
 
 // Console output
@@ -278,19 +296,21 @@ Response:
 }
 ```
 
-## 📚 Öğrenilen Konular
+## 📚 Topics Covered
 
-Bu proje **TüM eğitim modüllerini** kapsar:
+This project covers **ALL training modules**:
 
-### Modül 1: Modern C#
+### Module 1: Modern C#
+
 ✅ Records  
 ✅ Primary Constructors  
 ✅ Nullable Reference Types  
 ✅ LINQ  
 ✅ Dependency Injection  
-✅ Options Pattern  
+✅ Options Pattern
 
-### Modül 2: Web API & EF Core
+### Module 2: Web API & EF Core
+
 ✅ Controller-based API  
 ✅ Entity Framework Core  
 ✅ Fluent API Configuration  
@@ -298,20 +318,22 @@ Bu proje **TüM eğitim modüllerini** kapsar:
 ✅ AsNoTracking (Performance)  
 ✅ Eager Loading  
 ✅ Global Exception Handling  
-✅ ProblemDetails  
+✅ ProblemDetails
 
-### Modül 3: Architecture & Security
+### Module 3: Architecture & Security
+
 ✅ Clean Architecture  
 ✅ SOLID Principles  
 ✅ JWT Authentication  
 ✅ Role-based Authorization  
 ✅ Serilog Structured Logging  
 ✅ Health Checks  
-✅ Docker & Docker Compose  
+✅ Docker & Docker Compose
 
-## 👨‍💻 Geliştirici Notları
+## 👨‍💻 Developer Notes
 
-### Migration Ekleme
+### Add Migration
+
 ```bash
 cd src/TaskFlow.API
 dotnet ef migrations add MigrationName
@@ -319,7 +341,9 @@ dotnet ef database update
 ```
 
 ### Environment Variables
-Production'da şunları environment variable olarak set edin:
+
+Set these as environment variables in production:
+
 - `ConnectionStrings__DefaultConnection`
 - `JwtSettings__SecretKey`
 
@@ -327,9 +351,9 @@ Production'da şunları environment variable olarak set edin:
 
 MIT
 
-## 🤝 Katkıda Bulunma
+## 🤝 Contributing
 
-Bu proje eğitim amaçlıdır. Geliştirmeler için Pull Request açabilirsiniz.
+This project is for educational purposes. Feel free to open a Pull Request for improvements.
 
 ---
 
