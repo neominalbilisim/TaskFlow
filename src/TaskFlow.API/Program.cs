@@ -32,7 +32,7 @@ try
 
     // Database
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("LocalConnection")));
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
     // Repositories
     builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -110,7 +110,10 @@ builder.Services.AddHealthChecks()
 
     var app = builder.Build();
 
-  app.UseHttpsRedirection();
+  if (!app.Environment.IsDevelopment())
+  {
+      app.UseHttpsRedirection();
+  }
 
   // Global exception handling
   app.UseExceptionHandler(appError =>
@@ -152,11 +155,24 @@ builder.Services.AddHealthChecks()
 
     app.MapControllers();
 
-    // Database migration
+    // Database migration (retry for Docker startup timing)
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        db.Database.Migrate();
+        var retries = 10;
+        while (retries-- > 0)
+        {
+            try
+            {
+                db.Database.Migrate();
+                break;
+            }
+            catch (Exception ex) when (retries > 0)
+            {
+                Log.Warning(ex, "DB not ready, retrying in 3s... ({Retries} left)", retries);
+                Thread.Sleep(3000);
+            }
+        }
     }
 
     app.Run();

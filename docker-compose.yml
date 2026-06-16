@@ -1,35 +1,29 @@
-version: '3.8'
-
 services:
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "5000:80"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TaskFlowDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
-    depends_on:
-      - sqlserver
-    networks:
-      - taskflow-network
-
-  sqlserver:
+  mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=YourStrong@Passw0rd
+    container_name: taskflow_db
     ports:
       - "1433:1433"
-    volumes:
-      - sqldata:/var/opt/mssql
-    networks:
-      - taskflow-network
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Neominal123!
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Neominal123! -Q 'SELECT 1' -No"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
-networks:
-  taskflow-network:
-    driver: bridge
-
-volumes:
-  sqldata:
+  taskflow.api:
+    image: ${DOCKER_REGISTRY-}taskflowapi
+    build:
+      context: .
+      dockerfile: src/TaskFlow.API/Dockerfile
+    depends_on:
+      mssql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=mssql;Database=TaskFlowDb;User Id=sa;Password=Neominal123!;TrustServerCertificate=True;
