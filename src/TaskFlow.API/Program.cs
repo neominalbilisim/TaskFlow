@@ -1,10 +1,12 @@
-using System.Text;
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using System.Text;
+using TaskFlow.API.Authorizations;
 using TaskFlow.Application.Interfaces;
 using TaskFlow.Application.Services;
 using TaskFlow.Application.Validators;
@@ -47,6 +49,9 @@ try
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<ITokenService, TokenService>();
 
+    // Handlerı her istekde devreye almak için
+    builder.Services.AddTransient<IAuthorizationHandler, DomainNameRequirementHandler>();
+
     // FluentValidation
     builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
@@ -65,9 +70,46 @@ try
                 IssuerSigningKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]!))
             };
+
+
+            // Add logging for authentication events
+            options.Events = new JwtBearerEvents
+            {
+                OnAuthenticationFailed = context =>
+                {
+                    Log.Error(context.Exception, "Authentication failed");
+                    return Task.CompletedTask;
+                },
+                OnTokenValidated = context =>
+                {
+                    Log.Information("Token validated for user: {User}", context.Principal?.Identity?.Name);
+                    return Task.CompletedTask;
+                }
+            };
         });
 
-    builder.Services.AddAuthorization();
+    // Uygulama özgü yetkilendirme süreçlerini yönettiğimiz kısım.
+    builder.Services.AddAuthorization(policy =>
+    {
+
+
+        policy.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+        policy.AddPolicy("OnlyAuthenticated", policy => policy.RequireAuthenticatedUser());
+        policy.AddPolicy("DepartmentOnly", policy => policy.RequireClaim("Department", "HR", "Sales"));
+        //policy.AddPolicy("HasOnlyDomainAccess", policy => policy.AddRequirements(new DomainNameRequirement("neominal.com")));
+        policy.AddPolicy("MinimumAge", policy => policy.RequireAssertion(context =>
+        {
+            var dateOfBirthClaim = context.User.FindFirst(c => c.Type == "DateOfBirth");
+            if (dateOfBirthClaim == null) return false;
+            if (DateTime.TryParse(dateOfBirthClaim.Value, out var dateOfBirth))
+            {
+                return dateOfBirth.AddYears(18) <= DateTime.UtcNow;
+            }
+            return false;
+        }));
+
+
+    });
 
     // Controllers
     builder.Services.AddControllers();
