@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Security.Claims;
 using TaskFlow.Application.DTOs;
 using TaskFlow.Application.Interfaces;
@@ -53,7 +54,15 @@ public class TasksController : ControllerBase
     [Authorize(Roles = "Admin,Manager")]
     public async Task<ActionResult<TaskResponse>> CreateTask(CreateTaskRequest request, CancellationToken cancellationToken)
     {
-        var result = await _taskService.CreateTaskAsync(request, cancellationToken);
+
+    // CreateTaskRequest cr =  request with
+    //    {
+    //        Title = request.Title.Trim(),
+    //        Description = request.Description?.Trim()
+    //    }
+    //; 
+
+    var result = await _taskService.CreateTaskAsync(request, cancellationToken);
         return CreatedAtAction(nameof(GetTask), new { id = result.Id }, result);
     }
 
